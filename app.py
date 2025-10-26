@@ -56,6 +56,32 @@ app.layout = dbc.Container(fluid=True, className="dbc", children=[
         ]),
     ], className="mb-4"),
 
+    dbc.Row([
+        dbc.Col(md=4, children=[
+            dbc.Card(
+                [dbc.CardHeader("Último Valor Registrado"),
+                 dbc.CardBody(id='card-body-recente', className="text-center")],
+                className="mb-4"
+            )
+        ]),
+
+        dbc.Col(md=4, children=[
+            dbc.Card(
+                [dbc.CardHeader("Variação no Período"),
+                 dbc.CardBody(id='card-body-variacao', className="text-center")],
+                className="mb-4"
+            )
+        ]),
+
+        dbc.Col(md=4, children=[
+            dbc.Card(
+                [dbc.CardHeader("Média no Período"),
+                 dbc.CardBody(id='card-body-media', className="text-center")],
+                className="mb-4"
+            )
+        ]),
+    ], className="mb-4"),
+
     dbc.Row(
         dbc.Col(
             dbc.Card(dbc.CardBody([
@@ -71,43 +97,87 @@ app.layout = dbc.Container(fluid=True, className="dbc", children=[
 ])
 
 @app.callback(
-    Output('main-chart', 'figure'),
+    [Output('main-chart', 'figure'),
+     Output('card-body-recente', 'children'),
+     Output('card-body-variacao', 'children'),
+     Output('card-body-media', 'children')],
     [Input('indicador-dropdown', 'value'),
      Input('date-picker-range', 'start_date'),
      Input('date-picker-range', 'end_date')]
 )
-def update_graph(cod_sgs, start_date, end_date):
-    if not all([cod_sgs, start_date, end_date]):
+def update_graph_and_cards(codigo_sgs, start_date, end_date):
+    if not all([codigo_sgs, start_date, end_date]):
         return dash.no_update
 
-    df_full = fetch_sgs_data(cod_sgs)
+    df_full = fetch_sgs_data(codigo_sgs)
+
+    fig_vazia = px.line(title="Não foi possível carregar os dados para este indicador.") \
+        .update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
 
     if df_full.empty:
-        return px.line(title="Não foi possível carregar os dados para este indicador.") \
-            .update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        card_vazio = html.H4("N/A", className="text-danger")
+        return fig_vazia, card_vazio, card_vazio, card_vazio
 
     df_filtered = df_full.loc[start_date:end_date]
 
+    if df_filtered.empty:
+        card_vazio = html.H4("N/A", className="text-warning")
+        return fig_vazia, card_vazio, card_vazio, card_vazio
+
+    info = INDICADORES[str(codigo_sgs)]
+    unidade = info['unidade']
     nome_coluna = df_filtered.columns[0]
 
+    unidade_variacao = "p.p." if "%" in unidade else unidade
+
+    valor_recente = df_filtered.iloc[-1, 0]
+    data_recente = df_filtered.index[-1].strftime('%d/%m/%Y')
+    card_recente_content = html.Div([
+        html.H4(f"{valor_recente:.2f} {unidade}", className="text-primary"),
+        html.P(f"em {data_recente}")
+    ])
+
+    media_periodo = df_filtered[nome_coluna].mean()
+    card_media_content = html.Div([
+        html.H4(f"{media_periodo:.2f} {unidade}", className="text-info"),
+        html.P(f"entre {start_date} e {end_date}")
+    ])
+
+    if len(df_filtered) < 2:
+        card_variacao_content = html.Div([
+            html.H4("N/A", className="text-warning"),
+            html.P("Período curto demais para calcular variação")
+        ])
+    else:
+        valor_inicial = df_filtered.iloc[0, 0]
+        data_inicial = df_filtered.index[0].strftime('%d/%m/%Y')
+        variacao_abs = valor_recente - valor_inicial
+
+        cor_variacao = "text-success" if variacao_abs >= 0 else "text-danger"
+
+        card_variacao_content = html.Div([
+            html.H4(f"{variacao_abs:+.2f} {unidade_variacao}", className=cor_variacao),
+            html.P(f"Desde {data_inicial}")
+        ])
+
+    # 5. Criação do Gráfico
     fig = px.line(
         df_filtered.reset_index(),
         x='Data',
         y=nome_coluna,
-        title=f"Série Histórica - {INDICADORES[str(cod_sgs)]['nome']}"
+        title=f"Série Histórica - {info['nome']}"
     )
 
-    # 5. Estiliza o gráfico
     fig.update_layout(
         template="plotly_dark",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font_color="white",
         xaxis_title="Período",
-        yaxis_title=INDICADORES[str(cod_sgs)]['unidade']
+        yaxis_title=unidade
     )
 
-    return fig
+    return fig, card_recente_content, card_variacao_content, card_media_content
 
 if __name__ == '__main__':
     app.run(debug=True)
