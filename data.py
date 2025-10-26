@@ -88,7 +88,7 @@ def fetch_sgs_data(cod_sgs):
                     f'formato=json&dataInicial={data_inicio_str}&dataFinal={data_fim_str}'
                 )
 
-                response = requests.get(url, timeout=10)
+                response = requests.get(url, timeout=30)
                 response.raise_for_status()
                 dados = response.json()
 
@@ -107,7 +107,7 @@ def fetch_sgs_data(cod_sgs):
                 f'formato=json&dataInicial={data_inicio_str}&dataFinal={data_fim_str}'
             )
 
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=30)
             response.raise_for_status()
             dados = response.json()
             if dados:

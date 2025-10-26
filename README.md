@@ -8,19 +8,19 @@ diretamente as APIs de Dados Abertos do Banco Central do Brasil (BCB).
 
 Escopo Mínimo
 
-Visualização da série histórica da Taxa SELIC (Meta).
+Visualização da série histórica da Taxa SELIC (Meta). ✅
 
-Visualização da série histórica do IPCA (Mensal e Acumulado 12m).
+Visualização da série histórica do IPCA (Mensal e Acumulado 12m). ✅
 
-Visualização do Câmbio PTAX (USD e EUR).
+Visualização do Câmbio PTAX (USD e EUR). ✅
 
-Filtros interativos por período (DatePickerRange).
+Filtros interativos por período (DatePickerRange). ✅
 
-Filtros interativos por indicador/moeda (Dropdown).
+Filtros interativos por indicador/moeda (Dropdown). ✅
 
 Funcionalidades Adicionais (Excelente)
 
-Cartões de Insight: Resumo com os valores mais recentes e variação (ex: "IPCA 12m: Y%").
+Cartões de Insight: Resumo com os valores mais recentes e variação (ex: "IPCA 12m: Y%"). ❌
 
 Aba de Expectativas: Visualização das projeções do Boletim Focus (IPCA, PIB, Câmbio).
 
@@ -28,7 +28,7 @@ Cache de Dados: Uso de Flask-Caching para reduzir a latência e o número de cha
 
 Tema Claro/Escuro: Toggle para alternar o tema do dashboard (Dash Bootstrap Components).
 
-Design Responsivo: O layout se adapta a dispositivos móveis.
+Design Responsivo: O layout se adapta a dispositivos móveis. ✅
 
 ## 🛠️ Tecnologias Utilizadas
 
